@@ -40,8 +40,45 @@ def ord_dh(csp):
     ''' return next Variable to be assigned according to the Degree Heuristic '''
     # IMPLEMENT
     pass
+    pass
+
+
+def ord_dh(csp):
+    ''' return next Variable to be assigned according to the Degree Heuristic '''
+    best_var = None
+    best_degree = -1
+
+    for v in csp.get_all_vars():
+        if v.is_assigned():
+            continue
+
+        degree = 0
+        for con in csp.get_cons_with_var(v):
+            for u in con.get_scope():
+                if u is not v and not u.is_assigned():
+                    degree += 1
+                    break   # count each constraint once
+
+        if degree > best_degree:
+            best_degree = degree
+            best_var = v
+
+    return best_var
 
 def ord_mrv(csp):
     ''' return Variable to be assigned according to the Minimum Remaining Values heuristic '''
     # IMPLEMENT
     pass
+    best_var = None
+    best_size = float('inf')
+
+    for v in csp.get_all_vars():
+        if v.is_assigned():
+            continue
+
+        size = v.cur_domain_size()
+        if size < best_size:
+            best_size = size
+            best_var = v
+
+    return best_var
