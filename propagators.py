@@ -101,7 +101,32 @@ def prop_FC(csp, newVar=None):
        only one uninstantiated Variable. Remember to keep
        track of all pruned Variable,value pairs and return '''
     #IMPLEMENT
-    pass
+    pruned = []
+
+    # Select constraints to consider
+    if newVar is None:
+        cons = []
+        for c in csp.get_all_cons():
+            if len(c.get_scope()) == 1:
+                cons.append(c)
+    else:
+        cons = csp.get_cons_with_var(newVar)
+
+    # Forward-check relevant constraints
+    for c in cons:
+        if c.get_n_unasgn() == 1:
+            U = c.get_unasgn_vars()[0]
+
+            # Iterate over a snapshot of current domain (safe while pruning)
+            for val in list(U.cur_domain()):
+                if not c.check_var_val(U, val):
+                    U.prune_value(val)
+                    pruned.append((U, val))
+
+            if U.cur_domain_size() == 0:
+                return False, pruned
+
+    return True, pruned
 
 
 def prop_GAC(csp, newVar=None):
@@ -109,4 +134,35 @@ def prop_GAC(csp, newVar=None):
        processing all constraints. Otherwise we do GAC enforce with
        constraints containing newVar on GAC Queue'''
     #IMPLEMENT
-    pass
+    pruned = []
+
+    # Initialize GAC queue
+    if newVar is None:
+        gac_queue = list(csp.get_all_cons())
+    else:
+        gac_queue = list(csp.get_cons_with_var(newVar))
+
+    # Optional: avoid duplicate constraints in queue for efficiency
+    in_queue = set(gac_queue)
+
+    while gac_queue:
+        c = gac_queue.pop(0)
+        in_queue.discard(c)
+
+        for var in c.get_scope():
+            # Iterate over a snapshot of current domain (safe while pruning)
+            for val in list(var.cur_domain()):
+                if not c.check_var_val(var, val):
+                    var.prune_value(val)
+                    pruned.append((var, val))
+
+                    if var.cur_domain_size() == 0:
+                        return False, pruned
+
+                    # If var changed, all constraints involving var may need rechecking
+                    for c2 in csp.get_cons_with_var(var):
+                        if c2 not in in_queue:
+                            gac_queue.append(c2)
+                            in_queue.add(c2)
+
+    return True, pruned
