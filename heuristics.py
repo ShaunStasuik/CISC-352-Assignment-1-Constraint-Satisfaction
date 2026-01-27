@@ -38,13 +38,6 @@ var_ordering == a function with the following template
 
 def ord_dh(csp):
     ''' return next Variable to be assigned according to the Degree Heuristic '''
-    # IMPLEMENT
-    pass
-    pass
-
-
-def ord_dh(csp):
-    ''' return next Variable to be assigned according to the Degree Heuristic '''
     best_var = None
     best_degree = -1
 
