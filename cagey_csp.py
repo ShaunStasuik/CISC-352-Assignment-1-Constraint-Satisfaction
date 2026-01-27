@@ -222,7 +222,7 @@ def cagey_csp_model(cagey_grid):
         if operation == '?':
             ops = ['+', '-', '*', '/', '%']
             var_names_str = ','.join([f"Var-Cell({r},{c})" for r, c in cells])
-            op_var_name = f"Cagee_op({target}:?:[{var_names_str}])"
+            op_var_name = f"Cage_op({target}:?:[{var_names_str}])"
             op_var = Variable(op_var_name, ops)
             operator_vars.append(op_var)
 
@@ -236,7 +236,6 @@ def cagey_csp_model(cagey_grid):
 
                     if num_vars == 1:
                         if values[0] == target:
-                            sat_tuples.append(values + (op,))
                             found_valid = True
                     else:
                         for perm in itertools.permutations(values):
