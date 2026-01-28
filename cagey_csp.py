@@ -221,90 +221,114 @@ def cagey_csp_model(cagey_grid):
         #complete cage constraint logic
         if operation == '?':
             ops = ['+', '-', '*', '/', '%']
-            var_names_str = ','.join([f"Var-Cell({r},{c})" for r, c in cells])
+            var_names_str = ', '.join([f"Var-Cell({r},{c})" for r, c in cells])
             op_var_name = f"Cage_op({target}:?:[{var_names_str}])"
             op_var = Variable(op_var_name, ops)
             operator_vars.append(op_var)
 
             con_name = f"Cage{cage_idx}({target}:?)"
-            constraint = Constraint(con_name, cage_vars + [op_var])
+            constraint = Constraint(con_name, [op_var] + cage_vars)
 
             sat_tuples = []
             for values in itertools.product(range(1, n+1), repeat = num_vars):
                 for op in ops:
-                    found_valid = False
 
                     if num_vars == 1:
                         if values[0] == target:
-                            found_valid = True
+                            sat_tuples.append((op,) + values)
                     else:
+                        found_valid = False
+
                         for perm in itertools.permutations(values):
-                            result = perm[0]
                             valid = True
 
-                            for i in range(1, num_vars):
-                                if op == '+':
-                                    result = result + perm[i]
-                                elif op == '-':
-                                    result = result - perm[i]
-                                elif op == '*':
-                                    result = result * perm[i]
-                                elif op == '/':
-                                    if perm[i] == 0:
-                                        valid = False
-                                        break 
-                                    if result % perm[i] != 0:
-                                        valid = False 
-                                        break
-                                    result = result // perm[i]
-                                elif op == '%':
-                                    result = result % perm[i]
-                            if valid and result == target:
+                            if op == '%':
+                                sum_remaining = sum(perm[1:])
+                                result = sum_remaining % perm[0]
+                                valid = (result == target)
+                            else:
+                                result = perm[0]
+                                for i in range(1, num_vars):
+                                    if op == '+':
+                                        result = result + perm[i]
+                                    elif op == '-':
+                                        result = result - perm[i]
+                                    elif op == '*':
+                                        result = result * perm[i]
+                                    elif op == '/':
+                                        if perm[i] == 0:
+                                            valid = False
+                                            break 
+                                        if result % perm[i] != 0:
+                                            valid = False 
+                                            break
+                                        result = result // perm[i]
+                                if valid:
+                                    valid = (result == target)
+                                
+                            if valid:
                                 found_valid = True
                                 break
-                    if found_valid:
-                        sat_tuples.append(values + (op,))
+                        if found_valid:
+                            for perm in set(itertools.permutations(values)):
+                                sat_tuples.append((op,) + perm)
+                            
             constraint.add_satisfying_tuples(sat_tuples)
             csp.add_constraint(constraint)
         else:
+
+            #start
+            ops = [operation]
+            var_names_str = ', '.join([f"Var-Cell({r},{c})" for r,  c in cells])
+            op_var_name = f"Cage_op({target}:{operation}:[{var_names_str}])"
+            op_var = Variable(op_var_name, ops)
+            operator_vars.append(op_var)
+
             con_name = f"Cage{cage_idx}({target}:{operation})"
-            constraint = Constraint(con_name, cage_vars)
+            constraint = Constraint(con_name, [op_var] + cage_vars)
 
             sat_tuples = []
             for values in itertools.product(range(1, n+1), repeat = num_vars):
                 if num_vars == 1:
                     if values[0] == target:
-                        sat_tuples.append(values)
+                        sat_tuples.append((operation,) + values)
                 else:
                     found_valid = False
                     for perm in itertools.permutations(values):
-                        result = perm[0]
                         valid = True
 
-                        for i in range(1, num_vars):
-                            if operation == '+':
-                                result = result + perm[i]
-                            elif operation == '-':
-                                result = result - perm[i]
-                            elif operation == '*':
-                                result = result * perm[i]
-                            elif operation == '/':
-                                if perm[i] == 0:
-                                    valid = False
-                                    break
-                                if result % perm[i] != 0:
-                                    valid = False
-                                    break
-                                result = result // perm[i]
-                            elif operation == '%':
-                                result = result % perm[i]
+                        if operation == '%':
+                            sum_remaining = sum(perm[1:])
+                            result = sum_remaining % perm[0]
+                            valid = (result == target)
+                        else:
+                            result = perm[0]
+                            for i in range(1, num_vars):
+                                if operation == '+':
+                                    result = result + perm[i]
+                                elif operation == '-':
+                                    result = result - perm[i]
+                                elif operation == '*':
+                                    result = result * perm[i]
+                                elif operation == '/':
+                                    if perm[i] == 0:
+                                        valid = False
+                                        break
+                                    if result % perm[i] != 0:
+                                        valid = False
+                                        break
+                                    result = result // perm[i]
+                            if valid:
+                                valid = (result == target)
 
-                        if valid and result == target:
+                        if valid:
                             found_valid = True
                             break
 
                     if found_valid:
-                        sat_tuples.append(values)
+                        for perm in set(itertools.permutations(values)):
+                            sat_tuples.append((operation,) + perm)
+            
             constraint.add_satisfying_tuples(sat_tuples)
             csp.add_constraint(constraint)
 
