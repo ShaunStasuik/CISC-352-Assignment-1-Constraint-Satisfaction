@@ -188,7 +188,7 @@ def nary_ad_grid(cagey_grid):
 def cagey_csp_model(cagey_grid):
     ##IMPLEMENT
     """
-    creating a complete CAGEY CSP using both grid and cage constraints.
+    creating a complete CAGEY CSP using both grid and cage constraint.
     This uses n-ary all different for grid plus cage constraints. 
     """
     n = cagey_grid[0]
