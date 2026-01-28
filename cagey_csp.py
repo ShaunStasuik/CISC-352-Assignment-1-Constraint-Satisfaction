@@ -159,7 +159,6 @@ def nary_ad_grid(cagey_grid):
             var = Variable(var_name, list(range(1, n+1)))
             var_array.append(var)
             var_matrix[(row, col)] = var
-    #creating CSP 
     csp = CSP(f"NaryAD-Cagey-{n}x{n}", var_array)
 
     #adding n-ary all-different constraints for all row
@@ -205,10 +204,6 @@ def cagey_csp_model(cagey_grid):
             idx = (row - 1)*n + (col -1)
             var_matrix[(row, col)] = var_array[idx]
 
-    #storing operator variable
-    operator_vars = []
-
-
     for cage_idx, cage in enumerate(cages):
         target = cage[0]
         cells = cage[1]
@@ -218,99 +213,53 @@ def cagey_csp_model(cagey_grid):
         cage_vars = [var_matrix[cell] for cell in cells]
         num_vars = len(cage_vars)
 
-        #complete cage constraint logic
+        # determining which operations to consider
         if operation == '?':
             ops = ['+', '-', '*', '/', '%']
-            var_names_str = ', '.join([f"Var-Cell({r},{c})" for r, c in cells])
-            op_var_name = f"Cage_op({target}:?:[{var_names_str}])"
-            op_var = Variable(op_var_name, ops)
-            operator_vars.append(op_var)
-
-            con_name = f"Cage{cage_idx}({target}:?)"
-            constraint = Constraint(con_name, [op_var] + cage_vars)
-
-            sat_tuples = []
-            for values in itertools.product(range(1, n+1), repeat = num_vars):
-                for op in ops:
-
-                    if num_vars == 1:
-                        if values[0] == target:
-                            sat_tuples.append((op,) + values)
-                    else:
-                        found_valid = False
-
-                        for perm in itertools.permutations(values):
-                            valid = True
-
-                            if op == '%':
-                                sum_remaining = sum(perm[1:])
-                                result = sum_remaining % perm[0]
-                                valid = (result == target)
-                            else:
-                                result = perm[0]
-                                for i in range(1, num_vars):
-                                    if op == '+':
-                                        result = result + perm[i]
-                                    elif op == '-':
-                                        result = result - perm[i]
-                                    elif op == '*':
-                                        result = result * perm[i]
-                                    elif op == '/':
-                                        if perm[i] == 0:
-                                            valid = False
-                                            break 
-                                        if result % perm[i] != 0:
-                                            valid = False 
-                                            break
-                                        result = result // perm[i]
-                                if valid:
-                                    valid = (result == target)
-                                
-                            if valid:
-                                found_valid = True
-                                break
-                        if found_valid:
-                            for perm in set(itertools.permutations(values)):
-                                sat_tuples.append((op,) + perm)
-                            
-            constraint.add_satisfying_tuples(sat_tuples)
-            csp.add_constraint(constraint)
         else:
-
-            #start
             ops = [operation]
-            var_names_str = ', '.join([f"Var-Cell({r},{c})" for r,  c in cells])
-            op_var_name = f"Cage_op({target}:{operation}:[{var_names_str}])"
-            op_var = Variable(op_var_name, ops)
-            operator_vars.append(op_var)
+        
+        # creating operator var
+        var_names_str = ', '.join([f"Var-Cell({r},{c})" for r, c in cells])
+        op_var_name = f"Cage_op({target}:{operation}:[{var_names_str}])"
+        op_var = Variable(op_var_name, ops)
+        
+        csp.add_var(op_var)
+        var_array.append(op_var)
 
-            con_name = f"Cage{cage_idx}({target}:{operation})"
-            constraint = Constraint(con_name, [op_var] + cage_vars)
+        con_name = f"Cage{cage_idx}({target}:{operation})"
+        constraint = Constraint(con_name, [op_var] + cage_vars)
 
-            sat_tuples = []
-            for values in itertools.product(range(1, n+1), repeat = num_vars):
+        # generating sat tuples
+        sat_tuples = []
+        
+        for values in itertools.product(range(1, n+1), repeat=num_vars):
+            for op in ops:
                 if num_vars == 1:
                     if values[0] == target:
-                        sat_tuples.append((operation,) + values)
+                        sat_tuples.append((op,) + values)
                 else:
                     found_valid = False
                     for perm in itertools.permutations(values):
                         valid = True
 
-                        if operation == '%':
-                            sum_remaining = sum(perm[1:])
-                            result = sum_remaining % perm[0]
-                            valid = (result == target)
+                        if op == '%':
+                            if perm[0] == 0:
+                                valid = False
+                            else:
+                                sum_remaining = sum(perm[1:])
+                                result = sum_remaining % perm[0]
+                                valid = (result == target)
                         else:
                             result = perm[0]
                             for i in range(1, num_vars):
-                                if operation == '+':
+                                if op == '+':
                                     result = result + perm[i]
-                                elif operation == '-':
+                                elif op == '-':
                                     result = result - perm[i]
-                                elif operation == '*':
+                                elif op == '*':
                                     result = result * perm[i]
-                                elif operation == '/':
+                                elif op == '/':
                                     if perm[i] == 0:
                                         valid = False
                                         break
@@ -327,16 +276,9 @@ def cagey_csp_model(cagey_grid):
 
                     if found_valid:
                         for perm in set(itertools.permutations(values)):
-                            sat_tuples.append((operation,) + perm)
-            
-            constraint.add_satisfying_tuples(sat_tuples)
-            csp.add_constraint(constraint)
-
-    #adding operator var to CSP and var_array
-    for op_var in operator_vars:
-        csp.add_var(op_var)
-        var_array.append(op_var)
+                            sat_tuples.append((op,) + perm)
+        
+        constraint.add_satisfying_tuples(sat_tuples)
+        csp.add_constraint(constraint)
 
     return csp, var_array
-                            
-    
