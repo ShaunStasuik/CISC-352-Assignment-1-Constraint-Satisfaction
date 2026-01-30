@@ -1,12 +1,24 @@
 # =============================
 # Student Names:
-# Group ID:
-# Date:
+#   Shaun Stasuik
+#   Daryan Lindsay
+#   Tirthkumar Patel
+# Group ID: 067
+# Course: CISC 352 – Artificial Intelligence
+# Assignment: CSP Propagators
+# File: propagators.py
+# Date: Jan 26, 2026
 # =============================
-# CISC 352
-# propagators.py
-# desc:
+# Description:
+# This file contains CSP propagation algorithms used during
+# backtracking search, including:
+#  - Plain backtracking
+#  - Forward checking
+#  - Generalized arc consistency (GAC)
 #
+# These propagators are used by the CSP solver to prune domains
+# and detect dead-ends early.
+# =============================
 
 
 #Look for #IMPLEMENT tags in this file. These tags indicate what has

@@ -1,12 +1,23 @@
 # =============================
-# Student Names: Tirthkumar Patel
+# Student Names:
+#   Shaun Stasuik
+#   Daryan Lindsay
+#   Tirthkumar Patel
 # Group ID: 067
+# Course: CISC 352 – Artificial Intelligence
+# Assignment: Cagey CSP
+# File: cagey.py
 # Date: Jan 26, 2026
 # =============================
-# CISC 352
-# cagey_csp.py
-# desc:
+# Description:
+# This file defines CSP models for the Cagey puzzle, including:
+#  - Binary not-equal grid constraints
+#  - N-ary all-different grid constraints
+#  - Full Cagey CSP with cage constraints
 #
+# Look for #IMPLEMENT tags for required code sections.
+# =============================
+
 
 #Look for #IMPLEMENT tags in this file.
 '''

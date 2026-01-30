@@ -1,12 +1,23 @@
 # =============================
 # Student Names:
-# Group ID:
-# Date:
+#   Shaun Stasuik
+#   Daryan Lindsay
+#   Tirthkumar Patel
+# Group ID: 067
+# Course: CISC 352 – Artificial Intelligence
+# Assignment: CSP Heuristics
+# File: heuristics.py
+# Date: Jan 26, 2026
 # =============================
-# CISC 352
-# heuristics.py
-# desc:
+# Description:
+# This file implements variable-ordering and value-ordering
+# heuristics for CSP backtracking search, such as:
+#  - Minimum Remaining Values (MRV)
+#  - Degree heuristic
+#  - Least Constraining Value (LCV)
 #
+# These heuristics guide search to improve efficiency.
+# =============================
 
 
 #Look for #IMPLEMENT tags in this file. These tags indicate what has
